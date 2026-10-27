@@ -38,6 +38,14 @@ export class LoginPage {
     async fillPasswordFormField( text: string ) {
         await this.passwordFormField.fill(text);
     }
+
+    // login as member of Lakeview-Bowls club
+    async loginAsSeededUser() {
+        await this.fillEmailFormField("user@lakeview.club");
+        await this.fillPasswordFormField("user123")
+        await this.clickSubmitLogin();
+    }
+    
 }
 
 
