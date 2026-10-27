@@ -31,3 +31,47 @@ These annotations can be applied to standalone or grouped tests.
 Locators are how Playwright knows where to click, or where to check if such element is present. It transforms code into a reference to HTML elements on page (simplified). 
 However, if there are elements that are repeatedly accessed then finding them every time results in a lot of code duplication, and what if the name of the button changes? All those references have to be updated.
 Instead, we can define a class for our elements within the testing suite, with a variable matching the locator. In this case only the class needs to be updated. 
+
+<details>
+ <summary> Click to view example LoginPage class</summary>
+export class LoginPage {
+
+    readonly page:Page;
+    // the actual button that submits the form of login details.
+    // in the current iteration it has text "Sign In"
+    readonly submitSignInButton: Locator; 
+    readonly emailFormField: Locator;
+    readonly passwordFormField: Locator;
+
+    // should probably use a better locator than text, but this is justified
+    readonly invalidLoginCredentialsMessage: Locator;
+
+
+    // HTML warning that a form field should have an ID or name attribute for ease of finding in testing/accessibility
+    constructor (page: Page) {
+        this.page = page;
+        this.submitSignInButton = page.getByRole('button', { name: ' Sign In'})
+        this.emailFormField = page.getByPlaceholder("Email")
+        this.passwordFormField = page.getByPlaceholder("Password")
+
+        // verbose variable name, but worth noting the CREDENTIALS are invalid - NOT the inputs !
+        this.invalidLoginCredentialsMessage = page.getByText("Invalid email or password");
+    }
+
+    async clickSubmitLogin() {
+        await this.submitSignInButton.click();
+    }
+
+    async fillEmailFormField( text: string ) {
+        await this.emailFormField.fill(text);
+    }
+
+    async fillPasswordFormField( text: string ) {
+        await this.passwordFormField.fill(text);
+    }
+}
+
+
+export default LoginPage;
+</summary>
+</details>
