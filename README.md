@@ -30,7 +30,7 @@ These annotations can be applied to standalone or grouped tests.
 ### Locators
 Locators are how Playwright knows where to click, or where to check if such element is present. It transforms code into a reference to HTML elements on page (simplified). 
 However, if there are elements that are repeatedly accessed then finding them every time results in a lot of code duplication, and what if the name of the button changes? All those references have to be updated.
-Instead, we can define a class for our elements within the testing suite, with a variable matching the locator. In this case only the class needs to be updated. 
+Instead, we can define a class for our elements within the testing suite, with a variable matching the locator. In this case only the class needs to be updated. Can also modify the assertations in here. 
 
 <details>
  <summary> Click to view example LoginPage class</summary>
