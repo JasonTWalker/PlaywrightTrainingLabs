@@ -322,7 +322,7 @@ test.beforeEach( async ({page}) => {
 
 </details>
 
-Enabling the user booking journey again, it works ! There is no need for the step to log the user in. Simply give the beforeEach the URL for the dashboard (courtesy of handy uiPages file) and let it run from there. 
+Enabling the user booking journey again, it works ! There is no need for the step to log the user in. Simply give the beforeEach the URL for the dashboard (courtesy of handy uiPages file) and let it run from there. The testing suite is now significantly faster.
 
 
 
