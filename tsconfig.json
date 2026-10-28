@@ -4,7 +4,7 @@
   },
   "include": [
     "playwright.config.ts",
-    "pages/**/*.ts",
+    "tests/pages/**/*.ts",
     "tests/**/*.ts"
   ]
 }
