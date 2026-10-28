@@ -206,6 +206,7 @@ Files Added:
   4. pages - not too sure yet, similar to uiPages but not exactly.
 - .env
   1.  Storing globally accessible variables relevant for testing such as user login details, admin logins, test environment (live/local/etc)
+  2.  dotenv package for accessing this also added to the project
 - pages
   1. created before, basically a POM for pages you might visit often - only existing one currently is 'login-page' for filling email/password forms and submission
   
@@ -213,3 +214,113 @@ Look, the goal here is to reduce as much code duplication as possible. The testi
 
 
 </hr>
+
+### State Storage ( Oh No )
+This took longer than I'd like to admit. The basic principle, is that UI tests should be as isolated as possible. Before implementing state storage - the user booking journey would require Playwright to go through all the user login steps, and then commence the booking journey. This introduces unnecessary fail-points that don't actually indicate how well the booking journey works at all. 
+
+This is achieved by defining a globalSetup in the playwright config. There will likely have to be changes to this made though - currently it only knows how to sign in as a user. In the future this should be extended for such as adminState, userState, etc. In this implementation, globalSetup is defined and it is run at the start of each test. Have a look at the global-setup code below - it is creating a browser instance and logging in, then it is storing the session details such as cookies and storagestate into a reusable json file. This way, the booking journey can simply load from this state and be effectively signed in as the user. 
+<details> <summary> global-setup Code </summary>
+
+ ```
+import { chromium, FullConfig } from '@playwright/test';
+import LoginPage from '../pages/login-page';
+import uiPages from '../utils/uiPages';
+
+async function globalSetup(config: FullConfig) {
+    // fetch user details from .env
+  const user = process.env.USEREMAIL!;
+  const password = process.env.USERPASSWORD!;
+  const { baseURL, storageState } = config.projects[0].use;
+  const browser = await chromium.launch({ headless: true, timeout: 10000 });
+  const page = await browser.newPage();
+  const loginPage = new LoginPage(page);
+
+  await page.goto(baseURL+uiPages.loginPage);
+  await loginPage.doLogin(user, password);
+  await loginPage.checkLoggedIn();
+  await page.context().storageState({ path: storageState as string });
+  await browser.close();
+}
+
+export default globalSetup;
+ 
+ ```
+</details>
+
+Now for our tests to actually use it we need to update the playwright config projects to use it. This should ideally run at the start of each test, though now remember we need to reset this state for our login tests - no good testing the login journey on a signed in account, is it?
+
+<details> <summary> Show playwright config mess</summary>
+
+ 
+ ```
+export default defineConfig({
+  /* ADDED BY JASON
+  add globalSetup, this runs before any tests - gets a "logged-in" state details and stores it in a .json for reuse
+  allows skipping of click-through sign-in*/
+  globalSetup: require.resolve('./tests/setup/global-setup'),
+
+  testDir: './tests',
+  /* Run tests in files in parallel */
+  fullyParallel: true,
+  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  forbidOnly: !!process.env.CI,
+  /* Retry on CI only */
+  retries: process.env.CI ? 2 : 1,
+  /* Opt out of parallel tests on CI. */
+  workers: process.env.CI ? 1 : 4,
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  reporter: 'html',
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /*ADDED BY JASON 
+    ADD STORAGESTATE FOR STORING SIGNED-IN STATE
+    CONFIGURE BASEURL TO USE ENV TO EASILY SWITCH BETWEEN WHICH URL TO USE E.G. LOCALHOST OR LIVE SERVER
+    */
+    storageState: 'storageState.json',
+    
+    baseURL: process.env.ENV === 'production' 
+      ? baseEnvUrl.production.home
+      : process.env.ENV === 'staging' 
+        ? baseEnvUrl.staging.home
+        : baseEnvUrl.local.home,
+
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    trace: 'on-first-retry',
+  },
+
+  /* Configure projects for major browsers */
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'],
+             storageState: 'storageState.json',
+            },
+    },
+
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'],
+            storageState: 'storageState.json',
+       },
+    }
+```
+</details>
+
+
+<details> <summary> Resetting state for login testing </summary>
+
+ ```
+test.use( { storageState: { cookies: [], origins: [] }});   //reset storage state ?
+test.describe.configure( { mode: 'serial'}); // as parallel causes issues
+
+test.beforeEach( async ({page}) => {
+    // await page.goto(pages.loginPage) // navigates to the defined EXTENSION of BASEURL
+    await page.goto(uiPages.loginPage);
+    loginPage = new LoginPage(page); //defines current page as LoginPage object to EXTEND methods
+})
+ ```
+
+</details>
+
+
+
