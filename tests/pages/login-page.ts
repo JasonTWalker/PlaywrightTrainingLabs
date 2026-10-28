@@ -2,6 +2,7 @@
 // Will contain locators for different fields, methods for typing within them 
 
 import { expect, type Locator, type Page } from "@playwright/test"
+import messages from "../utils/messages"
 
 export class LoginPage {
 
@@ -12,9 +13,6 @@ export class LoginPage {
     readonly emailFormField: Locator;
     readonly passwordFormField: Locator;
 
-    // should probably use a better locator than text, but this is justified
-    readonly invalidLoginCredentialsMessage: Locator;
-
 
     // HTML warning that a form field should have an ID or name attribute for ease of finding in testing/accessibility
     constructor (page: Page) {
@@ -22,9 +20,6 @@ export class LoginPage {
         this.submitSignInButton = page.getByRole('button', { name: ' Sign In'})
         this.emailFormField = page.getByPlaceholder("Email")
         this.passwordFormField = page.getByPlaceholder("Password")
-
-        // verbose variable name, but worth noting the CREDENTIALS are invalid - NOT the inputs !
-        this.invalidLoginCredentialsMessage = page.getByText("Invalid email or password");
     }
 
     async clickSubmitLogin() {
@@ -40,16 +35,22 @@ export class LoginPage {
     }
 
     // login as member of Lakeview-Bowls club
-    async loginAsSeededUser() {
-        await this.fillEmailFormField("user@lakeview.club");
-        await this.fillPasswordFormField("user123")
+    async doLogin(email: string, password: string) {
+        await this.fillEmailFormField(email);
+        await this.fillPasswordFormField(password);
         await this.clickSubmitLogin();
 
     }
 
     async checkLoggedIn() {
-        await this.page.waitForURL("/lakeview-bowls")
-        await expect(this.page).toHaveURL("/lakeview-bowls")
+        // await this.page.waitForURL("/lakeview-bowls")
+        await expect(this.page).toHaveURL(/lakeview-bowls/)
+    }
+
+    // Error message visible on the page.
+    // retrieved from utils/messages. Update there if message changes
+    async checkInvalidCredentials() {
+        await expect(this.page.getByText(messages.login.invalid)).toBeVisible();
     }
 
     // async checkInvalidCredentialsMessage() {
