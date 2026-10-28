@@ -1,3 +1,4 @@
 export default {
-    loginPage: '/auth/login'
+    loginPage: '/auth/login',
+    dashboard: '/dashboard',
 }
