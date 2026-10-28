@@ -13,14 +13,13 @@ if (!userEmail || !userPassword) {
 }
 
 test.use( { storageState: { cookies: [], origins: [] }});   //reset storage state ?
-test.describe.configure( { mode: 'serial'}) // as parallel causes issues
+test.describe.configure( { mode: 'serial'}); // as parallel causes issues
 
 test.beforeEach( async ({page}) => {
     // await page.goto(pages.loginPage) // navigates to the defined EXTENSION of BASEURL
-    await page.goto(uiPages.loginPage)
-    loginPage = new LoginPage(page) //defines current page as LoginPage object to EXTEND methods
-}
-)
+    await page.goto(uiPages.loginPage);
+    loginPage = new LoginPage(page); //defines current page as LoginPage object to EXTEND methods
+})
 
 test.describe("Login Page Testing ('/auth/login')", () => {
     test("Login attempt with invalid user/password prevents entry", async ( {page}) => {
@@ -32,8 +31,6 @@ test.describe("Login Page Testing ('/auth/login')", () => {
     })
 
     test("Login with valid user details signs in", async ( { page }) => {
-        // navigate to login page URL
-        await page.goto('http://localhost:3000/auth/login')
         // initialise loginPage reference
         await loginPage.doLogin(userEmail, userPassword);
 
