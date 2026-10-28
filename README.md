@@ -193,3 +193,23 @@ After updating the locator, test passes !
 <img width="667" height="422" alt="image" src="https://github.com/user-attachments/assets/f27a4618-1446-4b9e-988e-7245df7edee3" />
 
 </details>
+<hr>
+
+### Refactoring ! Project Structure For Consistency
+One thing that stood out a lot when watching the course was the usage of .env for storing details such as usernames and passwords. Of course! Why wouldn't you want a centralised place where you can change these values as needed - what if the seeded user changes, we'd have to replace every single instance it was mentioned!. So that's what I did - in an extension of this the course leader was also using Util files such as "uiPages" with reference to the url endpoints, e.g. 'login' = '/auth/login'. Now every time we need to navigate to the login page, we can simply use uiPages.login - this appends it to the defined baseUrl in environmentBaseUrls! Better yet - environmentBaseUrls lets us define these URLs for each environment - this way there is only a 1 line change in the .env file to change whether our tests run on localhost:3000 or the live server - awesome!
+
+Files Added:
+- utils
+  1. environmentBaseUrls - for determining the baseUrl of where to test the application. e.g. local: 'https://localhost:3000'
+  2. messages - for storing expected error messages. e.g. invalid email/password message - if devs change it, update it here.
+  3. uiPages - urls for extending base URL. e.g. login page is at "localhost:3000/auth/login", so here login: "/auth/login" or dashboard: "/dashboard"
+  4. pages - not too sure yet, similar to uiPages but not exactly.
+- .env
+  1.  Storing globally accessible variables relevant for testing such as user login details, admin logins, test environment (live/local/etc)
+- pages
+  1. created before, basically a POM for pages you might visit often - only existing one currently is 'login-page' for filling email/password forms and submission
+  
+Look, the goal here is to reduce as much code duplication as possible. The testing suite has also been split into separate files for testing functionality, e.g. into bowls-app-user-booking.spec.ts and bowls-app-user-login.spec.ts 
+
+
+</hr>
