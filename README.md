@@ -33,7 +33,10 @@ However, if there are elements that are repeatedly accessed then finding them ev
 Instead, we can define a class for our elements within the testing suite, with a variable matching the locator. In this case only the class needs to be updated. Can also modify the assertations in here. 
 
 <details>
- <summary> Click to view example LoginPage class </summary>summary>
+ <summary> Click to view example LoginPage class </summary>
+
+
+```
 export class LoginPage {
 
     readonly page:Page;
@@ -77,6 +80,32 @@ export class LoginPage {
     }
 }
 export default LoginPage;
+```
 </details>
 
 The justification for moving the LoginPage into a POM is that it is a requirement for many tests. Without a way currently to ensure a 'logged-in' state for each test, most functionality tests will need the test to sign in. This removes duplicate code, allowing for sign-in to be executed through a method call - in this case loginAsSeededUser().
+
+### TearDown
+TearDown is incredibly important, and it helps to have each test case return to a controllable, isolated state from which UI flow is easy to predict and write test cases for. In this project, I added conditional teardowns to beforeEach (test) and afterEach (test). The goal of this logic is to sign-out the user if a user is signed in at the start or end of each test - this is because pages look different based on the user type and if the user is signed in.
+
+<details>
+<summary>Show example teardown: </summary>
+
+ ```
+ // failures due to user already being logged in, different dashboard on index
+test.afterEach("Click sign out if button present", async ({ page }) => {
+    const signOutButton = page.getByRole('button', { name: "Sign Out"});
+    if (await signOutButton.isVisible().catch(() => false)) {
+        await signOutButton.click();
+    }
+})
+
+test.beforeEach("Navigate to dashboard, this is where a signout button is visible", async ({ page }) => {
+    await page.goto("http://localhost:3000/dashboard"); //for signed in user, this redirects to /lakeview-bowls/ where a sign out button is present
+    const signOutButton = page.getByRole('button', { name: "Sign Out"});
+    if (await signOutButton.isVisible().catch(() => false)) {
+        await signOutButton.click();
+  }
+})
+```
+</details>
