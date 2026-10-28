@@ -33,7 +33,7 @@ However, if there are elements that are repeatedly accessed then finding them ev
 Instead, we can define a class for our elements within the testing suite, with a variable matching the locator. In this case only the class needs to be updated. Can also modify the assertations in here. 
 
 <details>
- <summary> Click to view example LoginPage class</summary>
+ <summary> Click to view example LoginPage class </summary>summary>
 export class LoginPage {
 
     readonly page:Page;
@@ -69,9 +69,14 @@ export class LoginPage {
     async fillPasswordFormField( text: string ) {
         await this.passwordFormField.fill(text);
     }
+    // login as member of Lakeview-Bowls club
+    async loginAsSeededUser() {
+        await this.fillEmailFormField("user@lakeview.club");
+        await this.fillPasswordFormField("user123")
+        await this.clickSubmitLogin();
+    }
 }
-
-
 export default LoginPage;
-</summary>
 </details>
+
+The justification for moving the LoginPage into a POM is that it is a requirement for many tests. Without a way currently to ensure a 'logged-in' state for each test, most functionality tests will need the test to sign in. This removes duplicate code, allowing for sign-in to be executed through a method call - in this case loginAsSeededUser().
