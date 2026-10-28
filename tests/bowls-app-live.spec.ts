@@ -1,23 +1,23 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/login-page'
 
-// failures due to user already being logged in, different dashboard on index
-test.afterEach("Click sign out if button present", async ({ page }) => {
-    const signOutButton = page.getByRole('button', { name: "Sign Out"});
-    if (await signOutButton.isVisible().catch(() => false)) {
-        await signOutButton.click();
-    }
-})
+// // failures due to user already being logged in, different dashboard on index
+// test.afterEach("Click sign out if button present", async ({ page }) => {
+//     const signOutButton = page.getByRole('button', { name: "Sign Out"});
+//     if (await signOutButton.isVisible().catch(() => false)) {
+//         await signOutButton.click();
+//     }
+// })
 
 
-// failures due to user already being logged in, different dashboard on index
-test.beforeEach("Navigate to dashboard, this is where a signout button is visible", async ({ page }) => {
-    await page.goto("http://localhost:3000/dashboard"); //for signed in user, this redirects to /lakeview-bowls/ where a sign out button is present
-    const signOutButton = page.getByRole('button', { name: "Sign Out"});
-    if (await signOutButton.isVisible().catch(() => false)) {
-        await signOutButton.click();
-  }
-})
+// // failures due to user already being logged in, different dashboard on index
+// test.beforeEach("Navigate to dashboard, this is where a signout button is visible", async ({ page }) => {
+//     await page.goto("http://localhost:3000/dashboard"); //for signed in user, this redirects to /lakeview-bowls/ where a sign out button is present
+//     const signOutButton = page.getByRole('button', { name: "Sign Out"});
+//     if (await signOutButton.isVisible().catch(() => false)) {
+//         await signOutButton.click();
+//   }
+// })
 
 // Lab2A
 test.describe("Bowls Club App Homepage ('/')", () => {
@@ -36,14 +36,13 @@ test.describe("Bowls Club App Homepage ('/')", () => {
 });
 
 
-// Lab2B
-let loginPage: LoginPage;
+
 test.describe("Login Page Testing ('/auth/login')", () => {
     test("Login attempt with invalid user/password prevents entry", async ( {page}) => {
         // navigate to login page URL
         await page.goto('http://localhost:3000/auth/login')
         // initialise loginPage reference
-        loginPage = new LoginPage(page);
+        const loginPage = new LoginPage(page);
 
         await loginPage.fillEmailFormField("test@mail.com");
 
@@ -59,7 +58,7 @@ test.describe("Login Page Testing ('/auth/login')", () => {
         // navigate to login page URL
         await page.goto('http://localhost:3000/auth/login')
         // initialise loginPage reference
-        loginPage = new LoginPage(page);
+        const loginPage = new LoginPage(page);
 
         // user details taken fom prisma/seed.ts in current iteration (v1.0.2)
         await loginPage.fillEmailFormField("user@lakeview.club");
@@ -68,10 +67,8 @@ test.describe("Login Page Testing ('/auth/login')", () => {
 
         await loginPage.clickSubmitLogin();
 
-        // assert on error message
-        // no longer using loginPage as should now be bypassed
-        // not sure that i like this locator
-        await expect(page.getByText("Sign Out")).toBeVisible();
+        // call loginPage checkLoggedIn, calles page.WaitForUrl to give time for redirect
+        await loginPage.checkLoggedIn()
     })
 });
 
@@ -84,16 +81,17 @@ test.describe("User booking journey", () => {
             // navigate to login page URL
             await page.goto('http://localhost:3000/auth/login')
             // initialise loginPage reference
-            loginPage = new LoginPage(page);
+            const loginPage = new LoginPage(page);
 
             loginPage.loginAsSeededUser();
 
-            // assert on lakeview-bowls homepage
-            await expect(page).toHaveURL(/lakeview-bowls/);
+            loginPage.checkLoggedIn();
         });
 
         await test.step("User can navigate to bookings page", async() => {
             await page.getByText("Book Now").click();
+            await page.waitForURL(/bookings/)
+
             // assert that there is a header "Bookings" indicating they have navigated 
             // two headers with name Bookings however, one for page, one for side navbar, unsure what to do in this case, but asserting for 2 results passes
             await expect(page.getByRole("heading", {name: "Bookings"})).toHaveCount(2);
@@ -111,8 +109,9 @@ test.describe("User booking journey", () => {
 
         // ensure this step with the requested rink matches previous step
         await test.step("User dashboard has request visible", async() => {
-            await page.getByText("Dashboard").click();
+            await page.getByRole("link", {name: 'Dashboard'}).click();
             // assert on lakeview-bowls homepage
+            await page.waitForURL(/lakeview-bowls/)
             await expect(page).toHaveURL(/lakeview-bowls/);
 
             // as multiples of, assert there is at least one

@@ -1,7 +1,7 @@
 // Class that holds references to the login page of the bowls club application.
 // Will contain locators for different fields, methods for typing within them 
 
-import { type Locator, type Page } from "@playwright/test"
+import { expect, type Locator, type Page } from "@playwright/test"
 
 export class LoginPage {
 
@@ -44,7 +44,17 @@ export class LoginPage {
         await this.fillEmailFormField("user@lakeview.club");
         await this.fillPasswordFormField("user123")
         await this.clickSubmitLogin();
+
     }
+
+    async checkLoggedIn() {
+        await this.page.waitForURL("/lakeview-bowls")
+        await expect(this.page).toHaveURL("/lakeview-bowls")
+    }
+
+    // async checkInvalidCredentialsMessage() {
+    //     await this.page.wai
+    // }
     
 }
 
