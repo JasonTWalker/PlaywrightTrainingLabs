@@ -1,8 +1,26 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/login-page'
 
+// failures due to user already being logged in, different dashboard on index
+test.afterEach("Click sign out if button present", async ({ page }) => {
+    const signOutButton = page.getByRole('button', { name: "Sign Out"});
+    if (await signOutButton.isVisible().catch(() => false)) {
+        await signOutButton.click();
+    }
+})
+
+
+// failures due to user already being logged in, different dashboard on index
+test.beforeEach("Navigate to dashboard, this is where a signout button is visible", async ({ page }) => {
+    await page.goto("http://localhost:3000/dashboard"); //for signed in user, this redirects to /lakeview-bowls/ where a sign out button is present
+    const signOutButton = page.getByRole('button', { name: "Sign Out"});
+    if (await signOutButton.isVisible().catch(() => false)) {
+        await signOutButton.click();
+  }
+})
+
 // Lab2A
-test.describe.skip("Bowls Club App Homepage ('/')", () => {
+test.describe("Bowls Club App Homepage ('/')", () => {
     test('Has title and heading', async ({ page }) => {
         // open bowls application at index (empty url '/')
         await page.goto('http://localhost:3000/');
@@ -20,7 +38,7 @@ test.describe.skip("Bowls Club App Homepage ('/')", () => {
 
 // Lab2B
 let loginPage: LoginPage;
-test.describe.skip("Login Page Testing ('/auth/login')", () => {
+test.describe("Login Page Testing ('/auth/login')", () => {
     test("Login attempt with invalid user/password prevents entry", async ( {page}) => {
         // navigate to login page URL
         await page.goto('http://localhost:3000/auth/login')
