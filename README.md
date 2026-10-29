@@ -386,3 +386,117 @@ P.O.I.S.E.D Testing Heuristic provides a framework for API testing:
 
 </details>
 
+<hr> 
+
+### Bowls Club App Authentication with Example Request Collection
+APIs can require authentication in many different ways, with the goal to increase security and traceability. For example, being able to log WHO deleted WHAT from a database. As we already know, API URLs are publicly accessible, so proper steps need to be taken to prevent malicious actors or mistaken users from corrupting the system. Here I will explain HOW the Bowls app authenticates its API requests, then cover some example POST, GET, PUT requests from a Postman collection.
+
+<hr>
+
+#### Authentication
+
+The bowls application uses CSRF (Cross-Site Request Forgery) tokens, this is a random value that is associated with a users session. But how do we get the Postman client one of these tokens? With a little (a lot) help from Kieran Ellis, we have figured it out. By generating a POST request to the credentials section of the API with a Body containing login details, we can receive cookies that authenticate the user. By setting up two Requests in a Collection - one to authorize the session as an Admin of Lakeview Bowls, and another to authorize the session as a User - we can experiment with different levels of access and ensure certain requests are forbidden to a user - and even to admins.
+
+<details> <summary>Show details</summary>
+
+<img width="923" height="203" alt="image" src="https://github.com/user-attachments/assets/6c1ddc75-4bfb-45ca-9259-7726db438357" />
+
+<img width="923" height="227" alt="image" src="https://github.com/user-attachments/assets/0ec8d537-6674-4312-aa8b-39200e966a67" />
+
+The pm.environment simply accesses the local environment of Postman. This is where reusable variables such as baseUrl, adminEmail, adminPassword, csrfToken, etc are stored. This is particularly useful as it allows postman to switch between testing on the local server or the live server API with one environment change. Regardless, these scripts sign in as the provided account type (credentials in body) and update the session cookies accordingly. 
+<img width="923" height="222" alt="image" src="https://github.com/user-attachments/assets/93889d60-9320-4862-a659-86e985afaaf9" />
+
+</details>
+
+The next parts of this readme will take place on a clean, freshly seeded server (npm run db:setup). The credentials for the user will be Doris Smith's account, and the admin is self explanatory. So - let's try out some requests !
+
+<details> <summary> Postman Bowls Club Collection and Request Story </summary>
+
+</br>
+As explained, these requests will switch between User and Admin - I'll try as best I can to show WHO is making the request. 
+
+
+### GET bookings
+We'll do a GET bookings request for both User and Admin. As this is freshly seeded, there should be no bookings to show. The request is the same URL for both the club member and the admin.
+<img width="925" height="111" alt="image" src="https://github.com/user-attachments/assets/1b0be1aa-425c-4529-b792-26117d329bd5" />
+
+
+
+Club Member:
+
+<img width="913" height="101" alt="image" src="https://github.com/user-attachments/assets/0f8a702a-976f-4040-8b3a-afa9a0ae5e57" />
+
+200 OK Response, empty JSON signifies the club member has made no bookings.
+
+Club Admin:
+
+<img width="926" height="98" alt="image" src="https://github.com/user-attachments/assets/cd3b6652-8154-41d7-8cca-f15c80d37d22" />
+
+As above, no bookings related to the entire club. 
+
+
+### POST book a rink
+
+So, no bookings? In preparations for this, I have updated the scripts attached to the above authentication requests to set an environment variable "bookAuthor" to "ClubAdmin" and "ClubMember" when authentication changes. This will make who has made which bookings easier to track. So, let's create a new booking through Postman. Booking date has been set to 01/01/2027.
+
+Club Member:
+<img width="922" height="266" alt="image" src="https://github.com/user-attachments/assets/0b8c2d9d-895f-47ba-b4cf-8461c4ac70d6" />
+<img width="660" height="435" alt="image" src="https://github.com/user-attachments/assets/72d6659b-6ee0-40f4-b84b-5a007729f564" />
+
+201 Created !! You can see that the playerName has been correctly set to "ClubMember". 
+
+Authenticating as an Admin and running the GET bookings request again returns the following: 
+
+<details> <<summary>Output JSON:</summary>
+
+ ```
+
+ [
+    {
+        "id": "cmvtqatp00008z4cxa66rtk50",
+        "tenantId": "cmvtpmsjj0001h8cxyqva3zqa",
+        "userId": "cmvtpmswx0005h8cx6ma94hvv",
+        "date": "2027-06-19",
+        "status": "REQUESTED",
+        "createdAt": "2026-10-29T15:59:16.691Z",
+        "updatedAt": "2026-10-29T15:59:16.691Z",
+        "bookedByUserId": "cmvtpmswx0005h8cx6ma94hvv",
+        "adminOverride": false,
+        "overrideReason": null,
+        "bookedByTenantId": null,
+        "federationId": null,
+        "slots": [
+            {
+                "id": "cmvtqatp60009z4cx0brlfyeq",
+                "bookingId": "cmvtqatp00008z4cxa66rtk50",
+                "rinkId": "seed-rink-7",
+                "timeSlot": "10:00",
+                "playerName": "ClubMember",
+                "greenName": null,
+                "rink": {
+                    "id": "seed-rink-7",
+                    "name": "Rink 7",
+                    "greenId": "seed-green-2"
+                }
+            }
+        ],
+        "user": {
+            "id": "cmvtpmswx0005h8cx6ma94hvv",
+            "name": "Doris Smith",
+            "email": "user@lakeview.club"
+        },
+        "bookedByUser": {
+            "id": "cmvtpmswx0005h8cx6ma94hvv",
+            "name": "Doris Smith",
+            "email": "user@lakeview.club"
+        },
+        "payment": null
+    }
+]
+
+```
+</details>
+
+Nice, there's now a booking in the system. So, how can we modify it? 
+
+</details>
