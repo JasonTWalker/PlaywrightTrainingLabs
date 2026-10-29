@@ -341,6 +341,8 @@ Postman is an interface used to test API's. APIs are fundamentally a way for two
 - Headers
 - Body
 
+<hr>
+
 <details> <summary> Request Types:</summary>
  
  - 'GET' - for queries, information retrieval 
@@ -351,6 +353,8 @@ Postman is an interface used to test API's. APIs are fundamentally a way for two
 
 </details>
 
+<hr>
+
 <details> <summary> Status Codes: </summary>
 Status codes are sent within the request to tell the requester what happened. These fall in ranges, being 2XX, 3XX, 4XX, 5XX. More information on these is given below: </br>
 
@@ -359,5 +363,26 @@ Status codes are sent within the request to tell the requester what happened. Th
 - 4XX: Client Error, wrong request = 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 422 Unprocessable
 - 5XX Server Error, app failure - 500 Internal Server Error, 503 Service Unavailable 
  
+</details>
+
+<hr>
+
+P.O.I.S.E.D Testing Heuristic provides a framework for API testing:
+<details>
+ 
+- Parameters
+  - Check the inputs accepted. What if some are missing, additional inputs, or out of range? e.g. Booking a rink outside of operating hours.
+- Output
+  - Is the response correct? Formatted correctly, complete, with the correct status code provided?
+- Interop
+  - Is the API valid on all systems - remember that it can be accessed from outside a browser. Does it work on phone/browser/external app?
+- Security
+  - Authentication required? Who can see, call, edit, delete the database.
+- Errors
+  - When things go wrong - is it clear? Are they handled correctly?
+  - Determine what went wrong, e.g. 400 Bad Request - email form field formatted incorrectly. 
+- Data
+  - Storage and changes - are they returned correctly, consistent at edges? e.g. submit score -1 in the league table. 
+
 </details>
 
