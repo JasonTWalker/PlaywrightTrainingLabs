@@ -4,6 +4,8 @@ Base URL for testing set to 'localhost:3000', assumption that localhost server i
 
 <hr>
 
+<details> <Summary> <b> Playwright Stuff </b></Summary>
+
 
 ### Test Suite Syntax
 Within a test suite tests typically have a title, followed by the expectation. 
@@ -324,5 +326,38 @@ test.beforeEach( async ({page}) => {
 
 Enabling the user booking journey again, it works ! There is no need for the step to log the user in. Simply give the beforeEach the URL for the dashboard (courtesy of handy uiPages file) and let it run from there. The testing suite is now significantly faster.
 
+</details>
 
+# Postman Training !
+Postman is an interface used to test API's. APIs are fundamentally a way for two pieces of code to interact with each other, most commonly used to allow web applications to communicate with databases. This is done similar to web browsers through URL's. A command type is decided and a request location is sent. APIs consist of an API contract, being the Request (to endpoint) and the Response (from).
+
+#### Request
+- Endpoint
+- Headers
+- Body
+
+#### Response
+- Status Code
+- Headers
+- Body
+
+<details> <summary> Request Types:</summary>
+ 
+ - 'GET' - for queries, information retrieval 
+ - 'POST' - to create, POST requests tell a database to add {this}
+ - 'PUT' - to replace an existing resource, e.g. put User1 details in User2
+ - 'PATCH' - modify a part of an entry, e.g. replace User1 email with this new email
+ - 'DELETE' - to remove from, e.g. delete User1
+
+</details>
+
+<details> <summary> Status Codes: </summary>
+Status codes are sent within the request to tell the requester what happened. These fall in ranges, being 2XX, 3XX, 4XX, 5XX. More information on these is given below: </br>
+
+- 2XX: Success - 200 OK, 201 Created, 204 No Content (e.g. fetches empty database)
+- 3XX: Redirect - 301, 302
+- 4XX: Client Error, wrong request = 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 422 Unprocessable
+- 5XX Server Error, app failure - 500 Internal Server Error, 503 Service Unavailable 
+ 
+</details>
 
