@@ -499,4 +499,75 @@ Authenticating as an Admin and running the GET bookings request again returns th
 
 Nice, there's now a booking in the system. So, how can we modify it? 
 
+### PATCH update a booking status
+
+We know from the requirements that only a club admin should be able to change a booking from REQUESTED to APPROVED. Luckily we have an admin account present to test this - so let's see what happens when we try on both a club member account and an admin account. First, some explaining of what's going on. 
+<img width="920" height="149" alt="image" src="https://github.com/user-attachments/assets/1987ae77-c6a6-49d5-b4cb-b091328b758e" />
+
+As you can see the endpoint URL is replaced with the environment variable bookingId. This is defined the script within our GET bookings - if a booking with status REQUESTED is found, it updates the variable with the ID. As we only have one booking in the database currently, we know what booking we will be targeting. 
+
+<img width="928" height="172" alt="image" src="https://github.com/user-attachments/assets/d6be0c14-c50c-402d-9338-c0d8b8382f63" />
+
+So, as the MEMBER - let's try and approve our own booking. 
+<img width="933" height="165" alt="image" src="https://github.com/user-attachments/assets/9395192a-753b-45e4-bae2-7ff2cb51f766" />
+
+Error 403 Forbidden, members don't have permissions to approve bookings.
+
+Let's try as the admin.
+
+<img width="929" height="340" alt="image" src="https://github.com/user-attachments/assets/e6f964d8-43d1-49a2-a954-0bff8933a7d9" />
+
+200 OK ! As you can see, the status has been changed to approved. Double checking the state of the booking by running the GET request again:
+
+<details><summary>Show JSON Body</summary>
+
+```
+[
+    {
+        "id": "cmvtqatp00008z4cxa66rtk50",
+        "tenantId": "cmvtpmsjj0001h8cxyqva3zqa",
+        "userId": "cmvtpmswx0005h8cx6ma94hvv",
+        "date": "2027-06-19",
+        "status": "APPROVED",
+        "createdAt": "2026-10-29T15:59:16.691Z",
+        "updatedAt": "2026-10-29T16:27:20.049Z",
+        "bookedByUserId": "cmvtpmswx0005h8cx6ma94hvv",
+        "adminOverride": false,
+        "overrideReason": null,
+        "bookedByTenantId": null,
+        "federationId": null,
+        "slots": [
+            {
+                "id": "cmvtqatp60009z4cx0brlfyeq",
+                "bookingId": "cmvtqatp00008z4cxa66rtk50",
+                "rinkId": "seed-rink-7",
+                "timeSlot": "10:00",
+                "playerName": "ClubMember",
+                "greenName": null,
+                "rink": {
+                    "id": "seed-rink-7",
+                    "name": "Rink 7",
+                    "greenId": "seed-green-2"
+                }
+            }
+        ],
+        "user": {
+            "id": "cmvtpmswx0005h8cx6ma94hvv",
+            "name": "Doris Smith",
+            "email": "user@lakeview.club"
+        },
+        "bookedByUser": {
+            "id": "cmvtpmswx0005h8cx6ma94hvv",
+            "name": "Doris Smith",
+            "email": "user@lakeview.club"
+        },
+        "payment": null
+    }
+]
+
+```
+
+</details>
+
+
 </details>
