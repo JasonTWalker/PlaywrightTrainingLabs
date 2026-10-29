@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from './pages/login-page'
-import uiPages from './utils/uiPages';
+import { LoginPage } from '../pages/login-page';
+import uiPages from '../utils/uiPages';
 
 // WARNING: this assumes rink is available, however due to using locally run server there is non-zero chance it becomes booked
 // during exploratory testing or otherwise

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from './pages/login-page'
-import pages from './utils/pages'
-import uiPages from './utils/uiPages';
+import { LoginPage } from '../pages/login-page';
+import pages from '../utils/pages';
+import uiPages from '../utils/uiPages';
 
 // retrieve login details from .env, keeps these private from github and globally accessible if change needed
 const userEmail = process.env.USEREMAIL;
