@@ -1,4 +1,4 @@
-# Playwright Training Labs
+<img width="843" height="718" alt="image" src="https://github.com/user-attachments/assets/96ad8c31-b4b2-4200-8c25-6e2d8a1d42b2" /># Playwright Training Labs
 Public repository to show journey of learning automation testing with Playwright framework. Testing conducted on proprietary Bowls application which requires access.
 Base URL for testing set to 'localhost:3000', assumption that localhost server is active before test suite is ran. 
 
@@ -823,4 +823,18 @@ Okay, error message detailing what went wrong "Email already registered", which 
 
 From here it seems quite simple to negative test, you get the base request that is valid, then duplicate it and break fields and assert that the Status Codes and Error Messages are as expected. The problem for me right now is - I don't want to accidentally cause 409 Conflict errors if a test does fail and a registration slips through. I'm sure there's a better way to handle this with less risk, but for now I am going to randomly generate a number between 1 and 100,000 and use this to be part of the "valid email". I want a consistently valid email for when negative testing the other fields. I.e. if i want to test that special characters aren't allowed in the name field - then all other fields should be valid inputs. 
 
+This'll be included in the Before Request script for my base POST request that I will duplicate from.
+
+```
+// randolmy generate a valid email
+const randomNumber = Math.floor(Math.random() * 10000000000) + 1;
+pm.environment.set("randomNumberTest", randomNumber) 
+randomEmail = `user${randomNumber}@test.com`;
+pm.environment.set("randomEmail", randomEmail) 
+```
+
+<img width="843" height="718" alt="image" src="https://github.com/user-attachments/assets/419f9dfe-d5e6-4fb5-bf91-aa45933a91fa" />
+
+
+As we always expect this to be successful due to being a unique email, with a suitablly
 
