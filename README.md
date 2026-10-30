@@ -820,3 +820,7 @@ Okay, so the account was created. Without changing a thing, let's run the reques
 <img width="846" height="642" alt="image" src="https://github.com/user-attachments/assets/6c50bfbd-655a-4c0a-adfe-6780a32e4b6a" />
 
 Okay, error message detailing what went wrong "Email already registered", which we know to be true. Error code 409 Conflict is a new one, but it makes sense. If a database requires unique emails and that's a constraint on that field - it wont allow the request. 
+
+From here it seems quite simple to negative test, you get the base request that is valid, then duplicate it and break fields and assert that the Status Codes and Error Messages are as expected. The problem for me right now is - I don't want to accidentally cause 409 Conflict errors if a test does fail and a registration slips through. I'm sure there's a better way to handle this with less risk, but for now I am going to randomly generate a number between 1 and 100,000 and use this to be part of the "valid email". I want a consistently valid email for when negative testing the other fields. I.e. if i want to test that special characters aren't allowed in the name field - then all other fields should be valid inputs. 
+
+
