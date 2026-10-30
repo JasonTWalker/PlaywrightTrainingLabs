@@ -571,3 +571,229 @@ Let's try as the admin.
 
 
 </details>
+
+<hr>
+
+### Headers and Bodies ! 
+
+So, previously we explored the different kinds of requests. We looked at the formatting for adding a booking to the database with a POST request - let's have a look at what happens if this request is corrupted, the booking is missing fields and so on - what does the response look like? 
+
+<details> <summary> Headers and Bodies Evidence </summary>
+<img width="925" height="267" alt="image" src="https://github.com/user-attachments/assets/abea88e0-10b4-430d-b596-31fbf19cd911" />
+
+This is the default POST request body for adding a booking, all required fields are present and the rest will be populated by the Headers, being the authentication cookie outlined in the previous section. The response JSON is simply the booking that was created, with a status code of 201 for created - all good there. Let's begin modifying some fields.
+
+<details><summary>Response JSON</summary>
+
+```
+{
+    "id": "cmvurb8tl000jz4cxxxfsbyzx",
+    "tenantId": "cmvtpmsjj0001h8cxyqva3zqa",
+    "userId": "cmvtpmsqu0004h8cxepbgp3tq",
+    "date": "2027-08-28",
+    "status": "REQUESTED",
+    "createdAt": "2026-10-30T09:15:22.087Z",
+    "updatedAt": "2026-10-30T09:15:22.087Z",
+    "bookedByUserId": "cmvtpmsqu0004h8cxepbgp3tq",
+    "adminOverride": false,
+    "overrideReason": null,
+    "bookedByTenantId": null,
+    "federationId": null,
+    "slots": [
+        {
+            "id": "cmvurb8tu000kz4cxnolf8m72",
+            "bookingId": "cmvurb8tl000jz4cxxxfsbyzx",
+            "rinkId": "seed-rink-7",
+            "timeSlot": "10:00",
+            "playerName": "ClubAdmin",
+            "greenName": null
+        }
+    ]
+}
+```
+</details>
+
+<hr>
+
+#### Malformed JSON
+What happens if the JSON body in the request is formatted incorrectly? 
+<img width="912" height="234" alt="image" src="https://github.com/user-attachments/assets/6c8016ce-5666-4dad-9c59-f9c188606770" />
+<img width="919" height="112" alt="image" src="https://github.com/user-attachments/assets/fe686ad9-c8e0-4287-a794-e76f83eed295" />
+
+We get a 500 Internal Server Error. From the course, I'm not sure this should be the response - it should be a 400 Bad Request. Though maybe it is ISE because it doesn't know what to do, it's not recognized as JSON.
+
+<hr>
+
+#### Extra Fields
+What happens if we add extra fields to the JSON body that aren't in the database?
+<img width="922" height="280" alt="image" src="https://github.com/user-attachments/assets/3cad9a00-c022-4514-bc66-f039e8117581" />
+Interestingly, the request is still 201; but the extra field doesn't show up in the Response Body. 
+
+<details><summary>Show Response Body</summary>
+
+```
+{
+    "id": "cmvuri1dp000nz4cxxxr468vl",
+    "tenantId": "cmvtpmsjj0001h8cxyqva3zqa",
+    "userId": "cmvtpmsqu0004h8cxepbgp3tq",
+    "date": "2027-05-26",
+    "status": "REQUESTED",
+    "createdAt": "2026-10-30T09:20:39.037Z",
+    "updatedAt": "2026-10-30T09:20:39.037Z",
+    "bookedByUserId": "cmvtpmsqu0004h8cxepbgp3tq",
+    "adminOverride": false,
+    "overrideReason": null,
+    "bookedByTenantId": null,
+    "federationId": null,
+    "slots": [
+        {
+            "id": "cmvuri1dt000oz4cx0fk7n1nh",
+            "bookingId": "cmvuri1dp000nz4cxxxr468vl",
+            "rinkId": "seed-rink-7",
+            "timeSlot": "10:00",
+            "playerName": "ClubAdmin",
+            "greenName": null
+        }
+    ]
+}
+
+```
+
+</details>
+
+That was in the "slots" key though, let's try adding another field outside of that.
+<img width="918" height="282" alt="image" src="https://github.com/user-attachments/assets/329cb150-b61d-4800-b685-d3afcedf69e0" />
+
+Again, it goes through and the booking is created - stripping the extra information.
+
+<hr>
+
+#### Missing Fields
+So, extra fields go through and are stripped, okay. What happens when presumably critical information relating to a booking is missing? For example, the time slot is pretty important - let's remove it.
+<img width="922" height="284" alt="image" src="https://github.com/user-attachments/assets/a4ded5ea-401c-4577-8ab8-3b66f1f85365" />
+
+<img width="915" height="104" alt="image" src="https://github.com/user-attachments/assets/78c64513-13f9-46d3-bb0b-8afd5acc427e" />
+
+
+Again, 500 Internal Server Error. I am more certain that this one should be a 400 Bad Request with a handy error message such as "time-slot not found" or otherwise for logging purposes.
+
+</details>
+
+<hr>
+
+### Assertions 
+
+Okay, sped through the previous sections a bit but now have a decent handle on before/after scripting (to set up local environment variables for authentication) and different response codes, request and response headers and bodies. In this section I will go through setting up some assertions. The first will be that a Club Member cannot approve their own booking.
+
+The flow will look like this:
+- Authorise as Club Member and store cookies (assert 200 OK)
+- POST a booking at a valid time (assert 201 created)
+- GET bookings, storing booking ID of a booking with status "REQUESTED" to local environment. (assert that one is found)
+- PATCH this booking ID, updating status to approved (assert Unauthorized error)
+
+<details> <summary>Collection Testing Flow:</summary>
+
+## POST Authorize As Club Member 
+Two test cases, one on the status code 200: OK, and another on the expected Response body, as on a successful validation the URL is returned. 
+
+```
+pm.sendRequest(`${pm.environment.get("baseUrl")}/api/auth/csrf`, (err, res) => {
+  if (err) throw err;
+  // if response is successful set token and author
+  pm.environment.set("csrfToken", res.json().csrfToken);
+  pm.environment.set("bookingAuthor", "TestMemberBookingApproval")
+
+  // assert response code 200
+    pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+    });
+  // and response body is baseUrl
+    pm.test("Response body contains baseUrl", function () {
+        pm.expect(pm.response.text()).to.include(pm.environment.get("baseUrl"));
+    })
+});
+
+```
+
+## POST Club Member Creates A Booking Request
+<img width="698" height="264" alt="image" src="https://github.com/user-attachments/assets/0b059738-590b-452c-8e1d-70fa1b6089e8" />
+
+As you can see, the booking date uses a local environment variable. This is randomly generated and assigned in the "before request" script section:
+
+```
+const d = new Date();
+d.setDate(d.getDate() + 30 + Math.floor(Math.random() * 300));
+pm.environment.set("bookingDate", d.toISOString().slice(0, 10));
+```
+
+Assertions are defined in the "After response" section. As we are creating a booking here, we want to test for Response Status Code 201: Created, we also want to extract the ID of the booking into a local environment variable for the next 'steps' or requests in the collection. So we'll first test that the new booking in the response body has status REQUESTED, then extract the ID. 
+
+```
+  // assert response code 201
+    pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+    });
+  // and response body is baseUrl
+    pm.test("Response body contains status: REQUESTED", function (){
+        pm.expect(pm.response.json().status).to.eql("REQUESTED");
+    })
+
+    pm.environment.set("bookingId", pm.response.json().id) 
+```
+
+
+## GET Booking Request Found In Database
+Another GET Request to fetch bookings, then using the stored local environment bookingId variable to ensure that our new booking was successfully stored and is retrievable. 
+
+After response script: 
+
+```
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+})
+
+const bookingIdToFind = pm.environment.get("bookingId");
+
+const b = pm.response.json().find(x => x.id === bookingIdToFind);
+pm.test("Booking ID matches", () => {
+    pm.expect(b.id).to.eql(bookingIdToFind);
+});
+
+pm.test("Booking status is REQUESTED", () => {
+    pm.expect(b.status).to.eql("REQUESTED");
+});
+
+```
+
+## PATCH Club Member Approving Booking Forbidden
+Now we are going to have the 'member' attempt to update their own booking status to APPROVED. This is forbidden, and should be handled by a club admin. But what happens if they try? 
+
+Request Body:
+
+<img width="702" height="194" alt="image" src="https://github.com/user-attachments/assets/2ce1b59d-f6fa-49ec-802f-b3655bcac2bb" />
+
+Response:
+
+<img width="711" height="151" alt="image" src="https://github.com/user-attachments/assets/7a300092-8eae-4de2-a391-274993bf57ba" />
+
+After response test script:
+```
+pm.test("Status code is 403", function () {
+    pm.response.to.have.status(403);
+});
+```
+
+## Testing Whole Collection
+Now running the entire collection looks like this: 
+
+Define Run Order and Run Type:
+
+<img width="734" height="515" alt="image" src="https://github.com/user-attachments/assets/5cf364d2-f5d2-41ae-898a-5467ed8330f8" />
+
+Run Results:
+
+<img width="841" height="715" alt="image" src="https://github.com/user-attachments/assets/29736e89-1169-4857-9654-2ebe65617fca" />
+
+Some issues occur if my environment variables aren't as consistent as I'd like. I think I need to experiment with setting environment variables for each "collection" and using that - this way I can reset them to a default state for test consistency, 
+
+</details>
