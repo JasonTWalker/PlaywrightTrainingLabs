@@ -395,7 +395,7 @@ APIs can require authentication in many different ways, with the goal to increas
 
 #### Authentication
 
-The bowls application uses CSRF (Cross-Site Request Forgery) tokens, this is a random value that is associated with a users session. But how do we get the Postman client one of these tokens? With a little (a lot) help from Kieran Ellis, we have figured it out. By generating a POST request to the credentials section of the API with a Body containing login details, we can receive cookies that authenticate the user. By setting up two Requests in a Collection - one to authorize the session as an Admin of Lakeview Bowls, and another to authorize the session as a User - we can experiment with different levels of access and ensure certain requests are forbidden to a user - and even to admins.
+The bowls application uses CSRF (Cross-Site Request Forgery) tokens, this is a random value that is associated with a users session. But how do we get the Postman client one of these tokens? With a little (a lot) help from Kieran Ellis, we have figured it out. By generating a POST request to the credentials section of the API with a Body containing login details, we can receive cookies that authenticate the user. By setting up two collections with POST requests - one to authorize the session as an Admin of Lakeview Bowls, and another to authorize the session as a User - we can experiment with different levels of access and ensure certain requests are forbidden to a user - and even to admins.
 
 <details> <summary>Show details</summary>
 
@@ -797,3 +797,26 @@ Run Results:
 Some issues occur if my environment variables aren't as consistent as I'd like. I think I need to experiment with setting environment variables for each "collection" and using that - this way I can reset them to a default state for test consistency, 
 
 </details>
+
+<hr>
+
+### Newman !
+
+Nevermind lol
+
+
+### POISED Negative Testing
+This will be the last thing I attempt this week, so it is unlikely to get very far. But I'd like to write out my thought process for what POISED looks like when examining a certain endpoint. For flexibility, I've chosen the new user Registration form, as this has available fields that are accessible. Though - not sure how to access the database of users to double check that none have slipped through - but I guess the Response body should be enough to validate this, i.e. if it's not 201 status code, it appropriately got rejected.
+
+#### User Registration Post Request
+By copying the cUrl from a browser when registering a new user, we can see what the api request looks like for registration: 
+
+<img width="850" height="712" alt="image" src="https://github.com/user-attachments/assets/a0c48ab6-6b6f-4b99-8e5d-18c257709ee2" />
+
+As you can see, this request was successful - with Status Code 201. The Response Body contains the created account information, with ID, Role, Email, Name, and tenantId (referencing the club lakeview-bowls). No password is shown, which is good - as it implies the server is not sending out unencrypted passwords over the internet which would assumedly be a security issue. 
+
+Okay, so the account was created. Without changing a thing, let's run the request again. You'd want to see a 400 bad request, as the email is already registered to an account. 
+
+<img width="846" height="642" alt="image" src="https://github.com/user-attachments/assets/6c50bfbd-655a-4c0a-adfe-6780a32e4b6a" />
+
+Okay, error message detailing what went wrong "Email already registered", which we know to be true. Error code 409 Conflict is a new one, but it makes sense. If a database requires unique emails and that's a constraint on that field - it wont allow the request. 
