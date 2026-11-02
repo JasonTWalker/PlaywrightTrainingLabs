@@ -1,4 +1,4 @@
-<img width="843" height="718" alt="image" src="https://github.com/user-attachments/assets/96ad8c31-b4b2-4200-8c25-6e2d8a1d42b2" /># Playwright Training Labs
+# Playwright Training Labs
 Public repository to show journey of learning automation testing with Playwright framework. Testing conducted on proprietary Bowls application which requires access.
 Base URL for testing set to 'localhost:3000', assumption that localhost server is active before test suite is ran. 
 
@@ -835,6 +835,5 @@ pm.environment.set("randomEmail", randomEmail)
 
 <img width="843" height="718" alt="image" src="https://github.com/user-attachments/assets/419f9dfe-d5e6-4fb5-bf91-aa45933a91fa" />
 
-
-As we always expect this to be successful due to being a unique email, with a suitablly
+As we always expect this to be successful due to being a unique email, with a suitably complex password, with a valid slug. This is kind of the benchmark to negative test against - but we should write assertions in the "after response" script to ensure correct status code 201 and the structure of the response body. 
 
