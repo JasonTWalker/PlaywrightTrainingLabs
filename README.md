@@ -388,6 +388,9 @@ P.O.I.S.E.D Testing Heuristic provides a framework for API testing:
 
 <hr> 
 
+<details><summary>Postman Graduate Learning Journey</summary>
+
+
 ### Bowls Club App Authentication with Example Request Collection
 APIs can require authentication in many different ways, with the goal to increase security and traceability. For example, being able to log WHO deleted WHAT from a database. As we already know, API URLs are publicly accessible, so proper steps need to be taken to prevent malicious actors or mistaken users from corrupting the system. Here I will explain HOW the Bowls app authenticates its API requests, then cover some example POST, GET, PUT requests from a Postman collection.
 
@@ -837,3 +840,5 @@ pm.environment.set("randomEmail", randomEmail)
 
 As we always expect this to be successful due to being a unique email, with a suitably complex password, with a valid slug. This is kind of the benchmark to negative test against - but we should write assertions in the "after response" script to ensure correct status code 201 and the structure of the response body. 
 
+
+</details>
